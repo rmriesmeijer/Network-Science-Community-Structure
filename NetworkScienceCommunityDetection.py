@@ -1,3 +1,9 @@
+
+
+from cdlib import algorithms
+
+from cdlib import NodeClustering
+
 from networkx import nx
 
 from networkx.drawing.nx_pylab import draw_networkx
@@ -8,18 +14,23 @@ import random
 
 import math
 
-from cdlib import algorithms
+import warnings
+
+from cdlib import evaluation
+
+from infomap import Infomap
+
+
+warnings.filterwarnings("ignore")
 
 # For visualization.
-limits = plt.axis('off') # turn of axis
+limits = plt.axis('off')  # turn of axis
+
 
 # Benchmark score function for given partition.
 def benchmark_score(G, partition):
-    score = 0.0
-    best = real_partition(G)
+    return real_partition(G).normalized_mutual_information(partition).score
 
-
-    return score
 
 def real_partition(G):
     unvisited = [True] * len(G.nodes)
@@ -29,77 +40,135 @@ def real_partition(G):
             part = list(G.nodes[i]['community'])
             result.append(part)
             for j in part:
-                unvisited[j] = false
-    return result
+                unvisited[j] = False
+    return create_node_clustering(G, result, "Real")
 
 
-# Simulated annealing k partitions on network for goal function.
-def simulated_annealing_partitions(G, num_partitions, goalfunction):
-    s = random_start(G, num_partitions)
-    score = 0
-    T = 1.001
-    diff = 1
-    while T < 0.002 or diff < 0.01:
-        x = random_neighbor(s)
-        new_score = goalfunction(G, x)
-        r = random.uniform(0, 1)
-        diff = new_score - score if new_score > score else 1
-        if score >= new_score or r <= exp((score - new_score) / T):
-            score = new_score
-            s = x
-        T -= 0.001
-    return s, score
-
-def random_start(G, num_partitions):
-    result = [[]]*num_partitions
-    for i in range(len(G.nodes)):
-        result[i % num_partitions].append(i)
-    return result
-
-def random_neighbor(partition):
-    new_partition = partition[:][:]
+def random_neighbor(G, part):
+    partition = part.communities
+    new_partition = [[y for y in x] for x in partition]
     index = random.randint(0, len(partition) - 1)
-    part_index = random.randomint(0, len(partition[index]) - 1)
+    while len(partition[index]) == 0:
+        index = random.randint(0, len(partition) - 1)
+    part_index = random.randint(0, len(partition[index]) - 1)
     elem = partition[index][part_index]
     new_index = random.randint(0, len(partition) - 1)
     del new_partition[index][part_index]
     new_partition[new_index].append(elem)
-    return new_partition
+    return create_node_clustering(G, new_partition, "")
+
+
+def create_node_clustering(G, partition, name, method_params={}):
+    return NodeClustering(partition, G, name, method_params)
+
 
 # Output results for analysis.
 def benchmark_scores():
-    graph_set = []
-    graph_set_params = []
-    scores_modularity = []
-    scores_goalfunction = []
-    scores_infomap = []
-    scores_ownfunction = []
+    '''
+    f = open("benchmarks-opt1.csv","w+")
+    f.write("Spinglass, InfoMap, Leiden, Mu")
 
     # Read and evaluate graphs.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
-        for i in range(20):
+        print(mu)
+        for i in range(50):
             filename = "./Graphs/lfr-graph{}-mu-{}.txt".format(i, mu)
             G = nx.read_gpickle(filename)
-            print(algorithms.infomap(G))
+            num = len(real_partition(G).communities)
+            scorespinglass = 0
+            try:
+                scorespinglass = benchmark_score(G, algorithms.spinglass(G))
+            except:
+                scorespinglass = -1
+            scoreinfomap = 0
+            try:
+                scoreinfomap = benchmark_score(G, algorithms.infomap(G))
+            except:
+                scoreinfomap = -1
+            scoreleiden = benchmark_score(G, algorithms.leiden(G))
+            f.write("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
+            print("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
 
-    return graph_set, graph_set_params, scores_modularity, scores_goalfunction, scores_infomap, scores_goalfunction
+    f.close()
 
-# Modularity function for given partition.
-def modularity_score(G, partition):
-    score = 0.0
+    f = open("benchmarks-opt2.csv","w+")
+    f.write("Spinglass, InfoMap, Leiden, Mu")
 
-    return score
+    # Read and evaluate graphs.
+    for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
+        print(mu)
+        for i in range(50):
+            filename = "./Graphs/lfr2-graph{}-mu-{}.txt".format(i, mu)
+            G = nx.read_gpickle(filename)
+            num = len(real_partition(G).communities)
+            scorespinglass = 0
+            try:
+                scorespinglass = benchmark_score(G, algorithms.spinglass(G))
+            except:
+                scorespinglass = -1
+            scoreinfomap = 0
+            try:
+                scoreinfomap = benchmark_score(G, algorithms.infomap(G))
+            except:
+                scoreinfomap = -1
+            scoreleiden = benchmark_score(G, algorithms.leiden(G))
+            f.write("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
+            print("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
 
-# Infomap function for given partition.
-def infomap_score(G, partition):
-    score = 0.0
+    f.close()
+    
+    f = open("benchmarks-det1.csv","w+")
+    f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum")
+    for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
+        print(mu)
+        for i in range(50):
+            filename = "./Graphs/lfr-graph{}-mu-{}.txt".format(i, mu)
+            G = nx.read_gpickle(filename)
+            part = real_partition(G)
+            for j in range(1000):
+                scorebench = benchmark_score(G, part)
+                scoremod = evaluation.newman_girvan_modularity(G, part).score
+                scoremapeq = eval_map_equation(G, part)
+                f.write("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
+                if j == 0 or j == 500 or j == 999:
+                    print("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
+                part = random_neighbor(G, part)
+    f.close()
+    '''
 
-    return score
+    f = open("benchmarks-det2.csv","w+")
+    f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
+    for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
+        print(mu)
+        for i in range(50):
+            filename = "./Graphs/lfr2-graph{}-mu-{}.txt".format(i, mu)
+            G = nx.read_gpickle(filename)
+            part = real_partition(G)
+            for j in range(1000):
+                scorebench = benchmark_score(G, part)
+                scoremod = evaluation.newman_girvan_modularity(G, part).score
+                scoremapeq = eval_map_equation(G, part)
+                f.write("%f, %f, %f, %d, %f, %d\n" % (scorebench, scoremod, scoremapeq, j, mu, i))
+                if j == 0 or j == 500 or j == 999:
+                    print("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
+                part = random_neighbor(G, part)
+    f.close()
 
-# Own community score for given partition.
-def ownfunction_score(G, partition):
-    score = 0.0
+def eval_map_equation(G, partitionobj):
+    g1 = nx.convert_node_labels_to_integers(G, label_attribute="name")
+    scoremapeq = 0
+    partition = partitionobj.communities
+    part = dict()
+    for i in range(len(partition)):
+        for ind in partition[i]:
+            part[ind] = i
+    im = Infomap("--silent")
+    for e in g1.edges():
+        im.addLink(e[0], e[1])
+    im.initial_partition = part
+    im.run()
+    scoremapeq = im.codelength
+    return scoremapeq
 
-    return score
 
 benchmark_scores()
