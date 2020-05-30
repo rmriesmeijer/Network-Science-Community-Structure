@@ -66,7 +66,7 @@ def create_node_clustering(G, partition, name, method_params={}):
 def benchmark_scores():
     '''
     f = open("benchmarks-opt1.csv","w+")
-    f.write("Spinglass, InfoMap, Leiden, Mu")
+    f.write("Spinglass, InfoMap, Leiden, Mu\n")
 
     # Read and evaluate graphs.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
@@ -86,13 +86,13 @@ def benchmark_scores():
             except:
                 scoreinfomap = -1
             scoreleiden = benchmark_score(G, algorithms.leiden(G))
-            f.write("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
+            f.write("%f, %f, %f, %f\n" % (scorespinglass, scoreinfomap, scoreleiden, mu))
             print("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
 
     f.close()
 
     f = open("benchmarks-opt2.csv","w+")
-    f.write("Spinglass, InfoMap, Leiden, Mu")
+    f.write("Spinglass, InfoMap, Leiden, Mu\n")
 
     # Read and evaluate graphs.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
@@ -112,13 +112,13 @@ def benchmark_scores():
             except:
                 scoreinfomap = -1
             scoreleiden = benchmark_score(G, algorithms.leiden(G))
-            f.write("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
+            f.write("%f, %f, %f, %f\n" % (scorespinglass, scoreinfomap, scoreleiden, mu))
             print("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
 
     f.close()
-    
+    '''
     f = open("benchmarks-det1.csv","w+")
-    f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum")
+    f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
         print(mu)
         for i in range(50):
@@ -129,13 +129,13 @@ def benchmark_scores():
                 scorebench = benchmark_score(G, part)
                 scoremod = evaluation.newman_girvan_modularity(G, part).score
                 scoremapeq = eval_map_equation(G, part)
-                f.write("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
+                f.write("%f, %f, %f, %d, %f, %d\n" % (scorebench, scoremod, scoremapeq, j, mu, i))
                 if j == 0 or j == 500 or j == 999:
                     print("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
                 part = random_neighbor(G, part)
     f.close()
-    '''
-
+    
+    
     f = open("benchmarks-det2.csv","w+")
     f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
@@ -153,6 +153,7 @@ def benchmark_scores():
                     print("%f, %f, %f, %d, %f, %d" % (scorebench, scoremod, scoremapeq, j, mu, i))
                 part = random_neighbor(G, part)
     f.close()
+    
 
 def eval_map_equation(G, partitionobj):
     g1 = nx.convert_node_labels_to_integers(G, label_attribute="name")
@@ -162,7 +163,7 @@ def eval_map_equation(G, partitionobj):
     for i in range(len(partition)):
         for ind in partition[i]:
             part[ind] = i
-    im = Infomap("--silent")
+    im = Infomap("--silent --no-infomap")
     for e in g1.edges():
         im.addLink(e[0], e[1])
     im.initial_partition = part
