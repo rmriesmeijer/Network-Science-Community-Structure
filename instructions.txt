@@ -1,0 +1,18 @@
+INSTRUCTIONS
+
++ Data analysis:
+- Included in the codebase there is an R script named "Analysis.R"
+- The R script contains all the dataframes and plots used in the paper
+- However, the R script uses data computed in the python scripts
+- To repeat the experiments and generate your own sample data you can run the python code
+- Warning: The python code needs about a day to complete a full run
+- To run the R analysis you will need the following packages: ggplot2, dplyr, hrbrthemes, viridis and cowplot
+- Don't forget to set the right file paths for the score data sets
+
++ Data generation:
+- There are three different parts to doing this correctly, that are listed in the order that works provably.
+- 1. Installing the python package networkx version 2.4 to run "LFRNetworkGenerator.py" to make the two sets of benchmarks
+- 2. Then when we want to analyze the optimizer scores the package cdlib with all options should be installed to run "NetworkScienceCommunityDetection.py", using the command "pip install cdlib[C]" but this only works for linux and mac.
+- 3. After this we can analyze the deterioration scores by installing the newest version of infomap with the command "pip install infomap --upgrade" to run the script "NetworkScienceDeterioration.py".
+
+Combining the generation of the data with the analysis the tables and figures of the paper can be reproduced.
