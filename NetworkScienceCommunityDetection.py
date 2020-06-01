@@ -21,17 +21,11 @@ from cdlib import evaluation
 from infomap import Infomap
 
 
-warnings.filterwarnings("ignore")
-
-# For visualization.
-limits = plt.axis('off')  # turn of axis
-
-
 # Benchmark score function for given partition.
 def benchmark_score(G, partition):
     return real_partition(G).normalized_mutual_information(partition).score
 
-
+# Read out the optimal partition from memory and convert it to a clustering.
 def real_partition(G):
     unvisited = [True] * len(G.nodes)
     result = []
@@ -43,7 +37,7 @@ def real_partition(G):
                 unvisited[j] = False
     return create_node_clustering(G, result, "Real")
 
-
+# Reassigns a random node to a random partition.
 def random_neighbor(G, part):
     partition = part.communities
     new_partition = [[y for y in x] for x in partition]
@@ -58,17 +52,17 @@ def random_neighbor(G, part):
     return create_node_clustering(G, new_partition, "")
 
 
+# Converts a list of communities into a clustering object for networkx.
 def create_node_clustering(G, partition, name, method_params={}):
     return NodeClustering(partition, G, name, method_params)
 
 
 # Output results for analysis.
 def benchmark_scores():
-    '''
     f = open("benchmarks-opt1.csv","w+")
     f.write("Spinglass, InfoMap, Leiden, Mu\n")
 
-    # Read and evaluate graphs.
+    # Read and evaluate graph optimizer scores for set 1.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
         print(mu)
         for i in range(50):
@@ -94,7 +88,7 @@ def benchmark_scores():
     f = open("benchmarks-opt2.csv","w+")
     f.write("Spinglass, InfoMap, Leiden, Mu\n")
 
-    # Read and evaluate graphs.
+    # Read and evaluate graph optimizer scores for set 2.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
         print(mu)
         for i in range(50):
@@ -116,9 +110,12 @@ def benchmark_scores():
             print("%f, %f, %f, %f" % (scorespinglass, scoreinfomap, scoreleiden, mu))
 
     f.close()
-    '''
+    
+
     f = open("benchmarks-det1.csv","w+")
     f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
+
+    # Read and evaluate graph deterioration scores for set 1.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
         print(mu)
         for i in range(50):
@@ -138,6 +135,8 @@ def benchmark_scores():
     
     f = open("benchmarks-det2.csv","w+")
     f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
+
+    # Read and evaluate graph deterioration scores for set 2.
     for mu in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]:
         print(mu)
         for i in range(50):
@@ -154,7 +153,7 @@ def benchmark_scores():
                 part = random_neighbor(G, part)
     f.close()
     
-
+# Computes the map equation score for a given partition.
 def eval_map_equation(G, partitionobj):
     g1 = nx.convert_node_labels_to_integers(G, label_attribute="name")
     scoremapeq = 0
