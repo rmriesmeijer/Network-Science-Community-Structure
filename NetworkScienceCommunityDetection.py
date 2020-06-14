@@ -38,9 +38,9 @@ def create_node_clustering(g, partition, name, method_params={}):
     return NodeClustering(partition, g, name, method_params)
 
 
-def benchmark_scores():
+def benchmark_scores(samplesize=1):
     """Generate score data sets."""
-    v = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+    v = [0.1]#, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 
     f = open("benchmarks-opt1.csv", "w+")
     f.write("Spinglass, InfoMap, Leiden, Mu\n")
@@ -48,7 +48,7 @@ def benchmark_scores():
     # Read and evaluate graph optimizer scores for set 1.
     for mu in v:
         print(mu)
-        for i in range(50):
+        for i in range(samplesize):
             filename = "./Graphs/lfr-graph{}-mu-{}.txt".format(i, mu)
             g = nx.read_gpickle(filename)
             scorespinglass = 0
@@ -73,7 +73,7 @@ def benchmark_scores():
     # Read and evaluate graph optimizer scores for set 2.
     for mu in v:
         print(mu)
-        for i in range(50):
+        for i in range(samplesize):
             filename = "./Graphs/lfr2-graph{}-mu-{}.txt".format(i, mu)
             g = nx.read_gpickle(filename)
             scorespinglass = 0

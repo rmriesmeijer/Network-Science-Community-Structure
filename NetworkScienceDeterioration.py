@@ -75,9 +75,9 @@ def eval_map_equation(g, partitionobj):
     return scoremapeq
 
 
-def benchmark_scores():
+def benchmark_scores(samplesize=1):
     """Generate score data sets."""
-    v = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+    v = [0.1]#, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 
     f = open("benchmarks-det1.csv", "w+")
     f.write("Benchmark, Modularity, MapEquation, Iteration, Mu, GraphNum\n")
@@ -85,7 +85,7 @@ def benchmark_scores():
     # Read and evaluate graph deterioration scores for set 1.
     for mu in v:
         print(mu)
-        for i in range(50):
+        for i in range(samplesize):
             filename = "./Graphs/lfr-graph{}-mu-{}.txt".format(i, mu)
             g = nx.read_gpickle(filename)
             part = real_partition(g)
@@ -106,7 +106,7 @@ def benchmark_scores():
     # Read and evaluate graph deterioration scores for set 2.
     for mu in v:
         print(mu)
-        for i in range(50):
+        for i in range(samplesize):
             filename = "./Graphs/lfr2-graph{}-mu-{}.txt".format(i, mu)
             g = nx.read_gpickle(filename)
             part = real_partition(g)

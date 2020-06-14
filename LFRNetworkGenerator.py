@@ -9,12 +9,14 @@ from networkx.generators.community import LFR_benchmark_graph
 from networkx import nx
 
 # Generator for the first set of benchmarks.
+samplesize = 1
 mus = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 for mu in mus:
     print(mu)
     i = 0
+    errored = False
     while True:
-        if i == 50:
+        if i == samplesize:
             break
         # Somehow sometimes the generator breaks.
         try:
@@ -31,15 +33,16 @@ for mu in mus:
 
             i = i + 1
         except:
-            print("Generator fail set 1.")
+            errored = True
 
 # Generator for the second set of benchmarks.
 mus = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 for mu in mus:
     print(mu)
     i = 0
+    errored = False
     while True:
-        if i == 50:
+        if i == samplesize:
             break
         # Somehow sometimes the generator breaks.
         try:
@@ -54,4 +57,4 @@ for mu in mus:
 
             i = i + 1
         except:
-            print("Generator fail set 2.")
+            errored = True
